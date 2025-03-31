@@ -1,28 +1,37 @@
 from os import system
 import requests
+import socket
 try:
     from ipwhois import IPWhois
 except ImportError:
-    import os
-    os.system('pip install ipwhois')
+    system('pip install ipwhois')
     from ipwhois import IPWhois
-    os.system('pip install requests')
+    system('pip install requests')
 
 def get_asn(ip_address):
     try:
         obj = IPWhois(ip_address)
         result = obj.lookup_rdap()
-        return result.get('asn', 'ASN bulunamadı')
+        return result.get('asn', 'ASN kody tapylmady')
     except Exception as e:
-        return f'Hata: {e}'
+        return f'Error: {e}'
+
+def get_ip_from_domain(domain):
+    try:
+        ip_address = socket.gethostbyname(domain)
+        return ip_address
+    except socket.gaierror:
+        return "Nädogry domain adresi girdiňiz"
 
 def get_ip_ranges(asn):
     try:
         url = f'https://api.bgpview.io/asn/{asn}/prefixes'
         response = requests.get(url)
         data = response.json()
-        
-        print(f"API yanıtı: {data}")  # Hata ayıklama için
+
+       
+        if response.status_code != 200:
+            return f"Error: API haýyşy şowsuz boldy, HTTP status kody: {response.status_code}"
 
         if 'data' in data and 'ipv4_prefixes' in data['data']:
             ipv4_addresses = [prefix['prefix'].split('/')[0] for prefix in data['data']['ipv4_prefixes']]
@@ -31,51 +40,63 @@ def get_ip_ranges(asn):
                     file.write('\n'.join(ipv4_addresses))
                 return ipv4_addresses
             else:
-                return "IP adresi bulunamadı."
+                return "Ip adresi tapylmady!"
         else:
-            return "Veri bulunamadı!"
+            return "data tapylmady"
     except Exception as e:
         return f'Hata: {e}'
 
 def main():
     while True:
         print("""
-           _____       __               __                
-          / ___/__  __/ /_  ____  ___  / /_ 
-          \__ \/ / / / __ \/ __ \/ _ \/ __/  
-         ___/ / /_/ / /_/ / / / /  __/ /_   
-        /____/\__,_/_.___/_/ /_/\___/\__/    
+         _____       __               __                
+        / ___/__  __/ /_  ____  ___  / /_ 
+        \__ \/ / / / __ \/ __ \/ _ \/ __/  
+       ___/ / /_/ / /_/ / / / /  __/ /_   
+      /____/\__,_/_.___/_/ /_/\___/\__/    
         """)
         
-        print("\033[92m|-------------------------------------|")
-        print("\033[94m|      Created by: @REDHAKER          |")
-        print("\033[92m|-------------------------------------|")
-        print("\033[93m| 1. IPv4 adresi ile ASN kodunu bul   |")
-        print("\033[93m| 2. ASN ile alt ağları çıkarmak      |")
-        print("\033[93m| 3. Çıkış                            |")
-        print("\033[92m|-------------------------------------|")
+        print("\033[92m|--------------------------------------|")
+        print("\033[94m|      Created by: @REDHAKER           |")
+        print("\033[92m|--------------------------------------|")
+        print("\033[93m| 1. IP adresi bilen asn kody tapmak   |")
+        print("\033[93m| 2. Domain bilen ip adresini tapmak   |")
+        print("\033[93m| 3. ASN kody bilen podsetleri tapmak  |")
+        print("\033[93m| 4. Çykyş                             |")
+        print("\033[92m|------------------------------------- |")
 
-        choice = input("\033[91m1-3: ").strip()
+        choice = input("\033[91m1-4: ").strip()
+        
         if choice == "1":
-            ip = input("IPv4 adresini girin: ")
+            ip = input("Ip adresini giriziň: ")
             asn = get_asn(ip)
-            print(f"{ip} adresinin ASN kodu: {asn}")
+            print(f"{ip} adresiniň ASN kody: {asn}")
+        
         elif choice == "2":
-            asn = input("ASN kodunu girin: ")
+            domain = input("Domain adresini giriziň: ").strip()
+            ip = get_ip_from_domain(domain)
+            if ip != "Nädogry domain adresi girdiňiz":
+                print(f"{domain} domainyň IP adresi: {ip}")
+            else:
+                print(ip)  
+
+        elif choice == "3":
+            asn = input("ASN kodunu girin: ").strip()
             if asn.isdigit():
                 ip_ranges = get_ip_ranges(asn)
                 print(ip_ranges)
                 if isinstance(ip_ranges, list) and ip_ranges:
-                    print(f"ASN {asn} için IP adresleri 'ASN_{asn}_asn_subnet_info.txt' dosyasına kaydedildi.")
+                    print(f"ASN {asn} üçin IP adresleri 'ASN_{asn}_asn_subnet_info.txt' faýlyna goşuldy.")
                 else:
-                    print(f"ASN {asn} için IP adresleri bulunamadı!")
+                    print(f"ASN {asn} üçin podsetler tapylmady!")
             else:
-                print("Geçerli bir ASN kodu girin!")
-        elif choice == "3":
-            print("Çıkılıyor...")
+                print("Dogry ASN kody giriziň!")
+        
+        elif choice == "4":
+            print("Çykylýar...")
             break
         else:
-            print("Yanlış seçim, lütfen 1-3 arasında bir sayı girin!\033[0m")
+            print("Yanlış seçim, 1-4 aralygynda bir san giriziň!\033[0m")
 
 if __name__ == "__main__":
     main()
