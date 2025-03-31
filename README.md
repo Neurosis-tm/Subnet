@@ -4,8 +4,8 @@ Script Install Kali Linux!
 1. apt update 
 2. apt upgrade
 3. apt install python3
-4. apt install wget
-5. wget https://github.com/Neurosis-tm/Subnet.git
+4. apt install git
+5. git clone https://github.com/Neurosis-tm/Subnet.git
 6. cd Subnet
 7. cd Subnet checker
 8. python asn.py
@@ -16,8 +16,8 @@ Script install Termux!(phone)
 2. pkg update
 3. pkg upgrade
 4. pkg install python3
-5. pkg install wget
-6. wget https://github.com/Neurosis-tm/Subnet.git
+5. pkg install git
+6. git clone https://github.com/Neurosis-tm/Subnet.git
 7. cd Subnet
 8. cd 'Subnet checker'
 9. python asn.py
